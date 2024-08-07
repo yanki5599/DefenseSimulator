@@ -1,0 +1,30 @@
+﻿@model IEnumerable<DefenseSimulator.Models.Arsenal>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Arsenals</h1>
+
+<p>
+    <a class="btn btn-primary" asp-action="Create">Create New Arsenal</a>
+</p>
+
+<div class="container">
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.DefenseWeapon.Type</h5>
+                        <p class="card-text">Amount: @item.Amount</p>
+                        <a href="@Url.Action("Edit", new { id = item.Id })" class="btn btn-warning">Add Ammo</a>
+                        <a href="@Url.Action("Details", new { id = item.Id })" class="btn btn-info">Details</a>
+                        <a href="@Url.Action("Delete", new { id = item.Id })" class="btn btn-danger">Delete</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

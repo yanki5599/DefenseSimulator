@@ -1,0 +1,34 @@
+﻿@model DefenseSimulator.Models.Arsenal
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<div class="container mt-4">
+    <h1>Details</h1>
+    <div class="card">
+        <div class="card-header">
+            <h4>Arsenal Details</h4>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-4">
+                    @Html.DisplayNameFor(model => model.Amount)
+                </dt>
+                <dd class="col-sm-8">
+                    @Html.DisplayFor(model => model.Amount)
+                </dd>
+                <dt class="col-sm-4">
+                    @Html.DisplayNameFor(model => model.DefenseWeapon)
+                </dt>
+                <dd class="col-sm-8">
+                    @Html.DisplayFor(model => model.DefenseWeapon.Type)
+                </dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model?.Id">Edit</a>
+            <a class="btn btn-secondary" asp-action="Index">Back to List</a>
+        </div>
+    </div>
+</div>

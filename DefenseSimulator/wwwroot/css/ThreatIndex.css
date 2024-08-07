@@ -1,0 +1,95 @@
+﻿
+.table {
+    background-color: #f8f9fa;
+}
+
+.thead-light th {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #e2e6ea;
+}
+
+.btn {
+    margin-right: 5px;
+}
+
+.btn-sm {
+    font-size: 0.875rem;
+}
+
+.btn-launch {
+    background-color: #007bff; /* Initial blue color */
+    color: white;
+    position: relative; /* Required for animation */
+    overflow: hidden; /* Ensures that the flicker effect stays within the button */
+}
+
+    .btn-launch:hover {
+        background-color: #dc3545; /* Change to red color on hover */
+        color: white;
+        animation: flicker 1s infinite; /* Apply flicker animation */
+    }
+
+    .btn-launch .bi-rocket {
+        position: relative; /* Required for animation */
+        animation: rocketFlicker 1s infinite; /* Apply rocket flicker animation */
+    }
+
+.btn-delete {
+    background-color: #dc3545; /* Danger red color */
+    color: white;
+}
+
+    .btn-delete:hover {
+        background-color: #c82333; /* Darker red on hover */
+        color: white;
+    }
+
+.indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #ccc; /* Default color */
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+    .indicator.green {
+        background-color: #28a745; /* Green color for success */
+    }
+
+    .indicator.red {
+        background-color: #dc3545; /* Red color for error or danger */
+    }
+
+    .indicator.yellow {
+        background-color: #ffc107; /* Yellow color for warning */
+    }
+
+/* Keyframes for button color flicker */
+@keyframes flicker {
+    0%, 100% {
+        background-color: #007bff;
+    }
+
+    50% {
+        background-color: #dc3545;
+    }
+}
+
+/* Keyframes for rocket icon flicker */
+@keyframes rocketFlicker {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+

@@ -2,8 +2,8 @@
 
 @{
     ViewData["Title"] = "Index";
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
-        <link rel="stylesheet" href="~/css/ThreatIndex.css">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
+            <link rel="stylesheet" href="~/css/ThreatIndex.css">
 }
 
 <h1 class="my-4">ניהול איומים</h1>
@@ -51,20 +51,24 @@
                                 <i class="bi bi-trash"></i> Delete
                             </a>
 
-                            <button id="launch-btn-@item.ThreatId"
-                                    data-action-url="@Url.Action("Launch", new { id = item.ThreatId })"
-                                    data-threat-id="@item.ThreatId"
-                                    class="btn btn-launch btn-sm"
-                                    disabled="@item.IsActive">
-                                <i class="bi bi-rocket" style="color:yellow"></i> @if (item.IsActive)
-                                {
-                                    <span>Launched</span>
-                                }
-                                else
-                                {
-                                    <span>Launch</span>
-                                }
-                            </button>
+
+                            @{
+                                string ActionName = item.IsActive ? "Terminate" : "Launch";
+                            }
+                          <form asp-action="@ActionName" method="post" asp-route-id="@item.ThreatId" class="m-2">
+                                <button class="btn btn-launch btn-sm"
+                                        disabled="@item.IsActive">
+                                    <i class="bi bi-rocket" style="color:yellow"></i> @if (item.IsActive)
+                                    {
+                                        <span>Launched</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Launch</span>
+                                    }
+                                </button>
+                              </form>
+                            
 
                         </td>
                     </tr>
@@ -73,134 +77,3 @@
         </table>
     </div>
 </div>
-
-<style>
-    .table {
-        background-color: #f8f9fa;
-    }
-
-    .thead-light th {
-        background-color: #e9ecef;
-        color: #495057;
-    }
-
-    .table-hover tbody tr:hover {
-        background-color: #e2e6ea;
-    }
-
-    .btn {
-        margin-right: 5px;
-    }
-
-    .btn-sm {
-        font-size: 0.875rem;
-    }
-
-    .btn-launch {
-        background-color: #3e9b16; /* Initial blue color */
-        color: white;
-        position: relative; /* Required for animation */
-        overflow: hidden; /* Ensures that the flicker effect stays within the button */
-    }
-
-        .btn-launch:hover {
-            background-color: #dc3545; /* Change to red color on hover */
-            color: white;
-            animation: flicker 1s infinite; /* Apply flicker animation */
-        }
-
-        .btn-launch .bi-rocket {
-            position: relative; /* Required for animation */
-            animation: rocketFlicker 1s infinite; /* Apply rocket flicker animation */
-        }
-
-    .btn-delete {
-        background-color: #dc3545; /* Danger red color */
-        color: white;
-    }
-
-        .btn-delete:hover {
-            background-color: #c82333; /* Darker red on hover */
-            color: white;
-        }
-
-    .indicator {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background-color: #ccc; /* Default color */
-        vertical-align: middle;
-        margin-right: 5px;
-    }
-
-        .indicator.green {
-            background-color: #28a745; /* Green color for success */
-        }
-
-        .indicator.red {
-            background-color: #dc3545; /* Red color for error or danger */
-        }
-
-        .indicator.yellow {
-            background-color: #ffc107; /* Yellow color for warning */
-        }
-
-</style>
-<script>
-    "use strict";
-
-    //var connection = new signalR.HubConnectionBuilder().withUrl("/alarmHub").build();
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const launchButtons = document.querySelectorAll('.btn-launch');
-
-        launchButtons.forEach(launchBtn => {
-            if (!launchBtn.disabled) {
-                launchBtn.addEventListener('click', function (event) {
-
-                    event.preventDefault();
-
-                    console.log(1);
-
-                    const actionUrl = launchBtn.getAttribute('data-action-url');
-                    const threatId = launchBtn.getAttribute('data-threat-id');
-
-                    performAction(actionUrl, threatId);
-                });
-            }
-        });
-
-
-        // Function to perform the intended action
-        function performAction(url, threatId) {
-            // Example of making an AJAX request with ThreatId as part of the body
-            fetch(url, {
-                method: 'POST', // or 'GET' depending on your API
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest' // Indicate that this is an AJAX request
-                },
-                body: JSON.stringify({ ThreatId: threatId }) // Include ThreatId in the request body
-            }).then(response => {
-                    if (response.ok) {
-                        return response.json(); // Parse the response as JSON
-                    }
-                    throw new Error('Network response was not ok.');
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Refresh the page on success
-                        location.reload();
-                    } else {
-                        // Handle failure case
-                        console.error('Operation failed:', data.message);
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-        }
-    });
-
-</script>

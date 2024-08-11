@@ -21,30 +21,30 @@
 }
 
 .btn-launch {
-    background-color: #007bff; /* Initial blue color */
+    background-color: #007bff;  Initial blue color 
     color: white;
-    position: relative; /* Required for animation */
-    overflow: hidden; /* Ensures that the flicker effect stays within the button */
+    position: relative;  Required for animation 
+    overflow: hidden;  Ensures that the flicker effect stays within the button 
 }
 
     .btn-launch:hover {
-        background-color: #dc3545; /* Change to red color on hover */
+        background-color: #dc3545;  Change to red color on hover 
         color: white;
-        animation: flicker 1s infinite; /* Apply flicker animation */
+        animation: flicker 1s infinite;  Apply flicker animation 
     }
 
     .btn-launch .bi-rocket {
-        position: relative; /* Required for animation */
-        animation: rocketFlicker 1s infinite; /* Apply rocket flicker animation */
+        position: relative;  Required for animation 
+        animation: rocketFlicker 1s infinite;  Apply rocket flicker animation 
     }
 
 .btn-delete {
-    background-color: #dc3545; /* Danger red color */
+    background-color: #dc3545;  Danger red color 
     color: white;
 }
 
     .btn-delete:hover {
-        background-color: #c82333; /* Darker red on hover */
+        background-color: #c82333;  Darker red on hover 
         color: white;
     }
 
@@ -53,24 +53,24 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background-color: #ccc; /* Default color */
+    background-color: #ccc;  Default color 
     vertical-align: middle;
     margin-right: 5px;
 }
 
     .indicator.green {
-        background-color: #28a745; /* Green color for success */
+        background-color: #28a745;  Green color for success 
     }
 
     .indicator.red {
-        background-color: #dc3545; /* Red color for error or danger */
+        background-color: #dc3545;  Red color for error or danger 
     }
 
     .indicator.yellow {
-        background-color: #ffc107; /* Yellow color for warning */
+        background-color: #ffc107;  Yellow color for warning 
     }
 
-/* Keyframes for button color flicker */
+ Keyframes for button color flicker 
 @keyframes flicker {
     0%, 100% {
         background-color: #007bff;
@@ -81,7 +81,7 @@
     }
 }
 
-/* Keyframes for rocket icon flicker */
+ Keyframes for rocket icon flicker 
 @keyframes rocketFlicker {
     0%, 100% {
         opacity: 1;

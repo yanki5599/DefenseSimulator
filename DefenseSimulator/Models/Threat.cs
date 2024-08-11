@@ -15,6 +15,8 @@ namespace DefenseSimulator.Models
         [Range(0, int.MaxValue)]
         public int Amount { get; set; }
         public bool IsActive { get; set; } = false;
+        public string? ActiveID { get; set; }
+        public bool IsInterceptedOrExploded { get; set; } = false ;
         public int AttackWeaponId { get; set; }
         public AttackWeapon? AttackWeapon { get; set; }
       

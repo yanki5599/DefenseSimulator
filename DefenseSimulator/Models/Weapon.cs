@@ -7,6 +7,6 @@ namespace DefenseSimulator.Models
         [Key]
         public int Id { get; set; }
         public int Speed { get; set; }
-        public int EffectiveDistance { get; set; }
+        public int Range { get; set; }
     }
 }

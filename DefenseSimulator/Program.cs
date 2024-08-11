@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using DefenseSimulator.Data;
 using DefenseSimulator.Hubs;
+using DefenseSimulator.Services;
 namespace DefenseSimulator
 {
     public class Program
@@ -16,6 +17,9 @@ namespace DefenseSimulator
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddSignalR();
+            builder.Services.AddScoped(typeof(NotificationHub));
+            builder.Services.AddScoped<ThreatHandlerService>();
+
 
             var app = builder.Build();
 
@@ -38,7 +42,7 @@ namespace DefenseSimulator
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
-            app.MapHub<AlarmHub>("/alarmHub");
+            app.MapHub<NotificationHub>("/NodificationHub");
 
             app.Run();
         }

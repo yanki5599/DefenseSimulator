@@ -26,5 +26,6 @@ namespace DefenseSimulator.Data
             modelBuilder.Entity<OriginThreat>().HasIndex(a => a.Name).IsUnique();
         }
         public DbSet<DefenseSimulator.Models.Threat> Threat { get; set; } = default!;
+        public DbSet<DefenseSimulator.Models.Response> Response { get; set; } = default!;
     }
 }

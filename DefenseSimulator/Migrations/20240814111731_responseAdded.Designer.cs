@@ -4,6 +4,7 @@ using DefenseSimulator.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DefenseSimulator.Migrations
 {
     [DbContext(typeof(DefenseSimulatorContext))]
-    partial class DefenseSimulatorContextModelSnapshot : ModelSnapshot
+    [Migration("20240814111731_responseAdded")]
+    partial class responseAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,19 +169,25 @@ namespace DefenseSimulator.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ThreatId"));
 
+                    b.Property<string>("ActiveID")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Amount")
                         .HasColumnType("int");
 
                     b.Property<int>("AttackWeaponId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsInterceptedOrExploded")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LaunchTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("OriginThreatId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ThreatStatus")
                         .HasColumnType("int");
 
                     b.HasKey("ThreatId");

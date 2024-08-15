@@ -1,16 +1,23 @@
 ﻿using DefenseSimulator.Data;
 using System.Collections.Concurrent;
 using DefenseSimulator.Models;
+using DefenseSimulator.Enums;
 using DefenseSimulator.Hubs;
+using System.Diagnostics;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using System.Threading;
+using System.Data;
 
 namespace DefenseSimulator.Services
 {
     public class ThreatHandlerService
     {
-        private static ConcurrentDictionary<string, CancellationTokenSource> _Threats = new ConcurrentDictionary<string, CancellationTokenSource>();
+        private static ConcurrentDictionary<int, CancellationTokenSource> _Threats = new ConcurrentDictionary<int, CancellationTokenSource>();
+        private static ConcurrentDictionary<int, CancellationTokenSource> _Responses = new ConcurrentDictionary<int, CancellationTokenSource>();
         private readonly DefenseSimulatorContext _context;
-        private readonly NotificationHub notificationHub;
-        public ThreatHandlerService(DefenseSimulatorContext ctx , NotificationHub notificationHub)
+        private readonly IHubContext<NotificationHub> _hubContext;
+        public ThreatHandlerService(DefenseSimulatorContext ctx , IHubContext<NotificationHub> notificationHub)
         {
             _context = ctx;
         }
@@ -24,22 +31,18 @@ namespace DefenseSimulator.Services
 
         public async Task<bool> RegisterAndRunThreatTask(int ThreatId)
         {
-            Threat? Threat = _context.Threat.Find(ThreatId);
+            Threat? threat = _context.Threat.Find(ThreatId);
             bool isRunning = IsThreatRunning(ThreatId);
 
-            if (Threat == null || Threat.IsInterceptedOrExploded || isRunning) return false;
 
-            var ThreatActiveId = Guid.NewGuid().ToString();
-            Threat.LaunchTime = DateTime.Now;
-            Threat.ActiveID = ThreatActiveId;
-            Threat.IsActive = true;
+            threat.LaunchTime = DateTime.Now;
+            threat.ThreatStatus = ThreatStatus.Active;
             await _context.SaveChangesAsync();
 
             var cts = new CancellationTokenSource();
-            _Threats[ThreatActiveId] = cts;
+            _Threats[threat.ThreatId] =  cts;
 
-            /*green non awaited warning without _ = */
-            _ = Task.Run(() => RunTask(ThreatActiveId, cts.Token), cts.Token);
+            _ = Task.Run(() => RunTask(threat.ThreatId, cts.Token), cts.Token);
 
             return true;
         }
@@ -48,15 +51,12 @@ namespace DefenseSimulator.Services
         public bool IsThreatRunning(int ThreatId)
         {
             Threat? Threat = _context.Threat.Find(ThreatId);
-            if (Threat == null ||
-                Threat.IsActive == false ||
-                Threat.ActiveID == null ||
-                Threat.IsInterceptedOrExploded == true) return false;
+            if (Threat == null || Threat.ThreatStatus != ThreatStatus.Active) return false;
 
-            return _Threats.ContainsKey(Threat.ActiveID);
+            return _Threats.ContainsKey(Threat.ThreatId);
         }
 
-        public async Task<bool> RemoveThreat(int ThreatId)
+        public async Task<bool> RemoveThreat(int ThreatId , ThreatStatus updatedStatus)
         {
             Threat? Threat = _context.Threat.Find(ThreatId);
 
@@ -67,45 +67,47 @@ namespace DefenseSimulator.Services
                 return false;
             }
 
-            _Threats.TryRemove(Threat.ActiveID, out CancellationTokenSource? cts);
+            _Threats.TryRemove(Threat.ThreatId, out CancellationTokenSource? cts);
             cts?.Cancel();
 
-            Threat.ActiveID = null;
-            Threat.IsActive = false;
-            Threat.IsInterceptedOrExploded = true;
+
+            Threat.ThreatStatus = updatedStatus;
             await _context.SaveChangesAsync();
 
             return true;
         }
 
-        private async Task RunTask(string ThreatId, CancellationToken token)
+        private async Task RunTask(int ThreatId, CancellationToken token)
         {
             try
             {
-                int elapsed = 0;
-                while (elapsed < 120 && !token.IsCancellationRequested)
+                var currThreat = await _context.Threat.FindAsync(ThreatId);
+                
+                while (currThreat.KaBoomTime < DateTime.UtcNow && !token.IsCancellationRequested)
                 {
-                    await Task.Delay(2000, token); // Wait for 2 seconds or cancel if requested
-                    elapsed += 2;
-                    var message = $"Threat {ThreatId} running for {elapsed} seconds.";
+                    await Task.Delay(1000, token); 
+                   
+                    var message = $"Threat {ThreatId} exploding in  {currThreat.KaBoomTime} seconds.";
                     Console.WriteLine(message);
-                    //await _hubContext.Clients.All.SendAsync("ReceiveProgress", message);
+                    await _hubContext.Clients.All.SendAsync("ReceiveProgress", message);
                 }
 
                 // Finished
                 if (!token.IsCancellationRequested)
                 {
-                    //await _hubContext.Clients.All.SendAsync("ReceiveProgress", $"Threat {ThreatId} completed.");
+                    await _hubContext.Clients.All.SendAsync("ReceiveProgress", $"Threat {ThreatId} Exploded.");
+                    RemoveThreat(ThreatId, ThreatStatus.Exploded);
                 }
             }
             catch (TaskCanceledException)
             {
-                //await _hubContext.Clients.All.SendAsync("ReceiveProgress", $"Threat {ThreatId} cancelled.");
+                await _hubContext.Clients.All.SendAsync("ReceiveProgress", $"Threat {ThreatId} aborted.");
             }
-            finally
+            catch (NullReferenceException ex)
             {
-                await RemoveThreat(int.Parse(ThreatId));
+                Debug.WriteLine(ex.ToString() + "reference threat is null");
             }
+            
         }
 
         internal void RebuildActiveThreats()
@@ -115,16 +117,88 @@ namespace DefenseSimulator.Services
                 return;
             }
 
-            var Threats = _context.Threat.Where(a => a.IsActive).ToList();
+            var Threats = _context.Threat.Where(a => a.ThreatStatus == ThreatStatus.Active).ToList();
             foreach (var Threat in Threats)
             {
-                if (Threat.ActiveID != null)
-                {
-                    var cts = new CancellationTokenSource();
-                    _Threats[Threat.ActiveID] = cts;
-                    _ = Task.Run(() => RunTask(Threat.ActiveID, cts.Token), cts.Token);
-                }
+                
+                var cts = new CancellationTokenSource();
+                _Threats[Threat.ThreatId] = cts;
+                _ = Task.Run(() => RunTask(Threat.ThreatId, cts.Token), cts.Token);
+                
             }
+        }
+
+        internal async Task<bool> InterseptThreat(int arsenalId)
+        {
+            var threatToIntersept = GetThreatToIntersept();
+            if( threatToIntersept == null) return false;
+
+            var currArsenal = await _context.Arsenal
+                .Include(a => a.DefenseWeapon)
+                .FirstAsync(a => a.Id == arsenalId);
+
+            if (currArsenal == null) throw new ArgumentException("arsenal is null");
+
+
+            Response response = new Response() 
+            { 
+                ThreatId = threatToIntersept.ThreatId,
+                DefenseWeaponId = currArsenal.DefenseWeaponId,
+                status = ResponseStatus.Active
+            };
+
+            await _context.Response.AddAsync(response);
+
+
+            var cts = new CancellationTokenSource();
+            _Responses[response.ResponseId] = cts;
+
+            _ = Task.Run(() => RunTaskResponse(response, cts.Token));
+
+            return true;
+        }
+
+        internal async Task RunTaskResponse(Response response, CancellationToken token)
+        {
+            try
+            {
+                while(response.KaboomboomTime < DateTime.UtcNow && !token.IsCancellationRequested)
+                {
+                    await Task.Delay(1000, token);
+                    var message = $"Response {response.ResponseId} Intersepting Threat {response.ThreatId} in  {response.KaboomboomTime} seconds.";
+                    Console.WriteLine(message);
+                    await _hubContext.Clients.All.SendAsync("ReceiveProgress", message);
+
+                }
+
+                //finished
+                await RemoveThreat(response.ThreatId,ThreatStatus.Intersepted);
+                await RemoveResponse(response.ResponseId,ResponseStatus.Success);
+
+            }catch(TaskCanceledException ex)
+            {
+                await RemoveResponse(response.ResponseId, ResponseStatus.Fail);
+            }
+        }
+
+        private async Task RemoveResponse(int responseId , ResponseStatus updatedStatus)
+        {
+            Response? response = _context.Response.Find(responseId);
+
+            
+
+            _Threats.TryRemove(responseId, out CancellationTokenSource? cts);
+            cts?.Cancel();
+
+
+            response.status = updatedStatus;
+            await _context.SaveChangesAsync();
+
+        }
+
+        private Threat? GetThreatToIntersept()
+        {
+            return _context.Threat.Where(t=>t.ThreatStatus == ThreatStatus.Active).MinBy(t=>t.KaBoomTime);
         }
     }
 }

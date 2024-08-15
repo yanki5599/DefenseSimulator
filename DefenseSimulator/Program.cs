@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using DefenseSimulator.Data;
 using DefenseSimulator.Hubs;
 using DefenseSimulator.Services;
+using DefenseSimulator.Models;
 namespace DefenseSimulator
 {
     public class Program
@@ -13,11 +14,11 @@ namespace DefenseSimulator
             builder.Services.AddDbContext<DefenseSimulatorContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefenseSimulatorContext") ?? throw new InvalidOperationException("Connection string 'DefenseSimulatorContext' not found.")));
            
-
+          
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddSignalR();
-            builder.Services.AddScoped(typeof(NotificationHub));
+            //builder.Services.AddScoped(typeof(NotificationHub));
             builder.Services.AddScoped<ThreatHandlerService>();
 
 

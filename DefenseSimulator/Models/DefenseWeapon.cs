@@ -10,3 +10,4 @@ namespace DefenseSimulator.Models
         public List<AttackWeapon>? VulnerableWeapons { get; set; }
     }
 }
+ 

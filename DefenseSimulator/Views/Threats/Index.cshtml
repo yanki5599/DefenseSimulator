@@ -1,4 +1,5 @@
-﻿@model IEnumerable<DefenseSimulator.Models.Threat>
+﻿@using DefenseSimulator.Enums
+@model IEnumerable<DefenseSimulator.Models.Threat>
 
 @{
     ViewData["Title"] = "Index";
@@ -47,15 +48,13 @@
                         </td>
                         <td>
                             <a asp-action="Details" asp-route-id="@item.ThreatId" class="btn btn-info btn-sm">Details</a>
-                            <a asp-action="Delete" asp-route-id="@item.ThreatId" class="btn btn-delete btn-sm">
+                            <a asp-action="Abort" asp-route-id="@item.ThreatId" class="btn btn-delete btn-sm">
                                 <i class="bi bi-trash"></i> Delete
                             </a>
 
 
-                            @{
-                                string ActionName = item.IsActive ? "Terminate" : "Launch";
-                            }
-                          <form asp-action="@ActionName" method="post" asp-route-id="@item.ThreatId" class="m-2">
+                          
+                            <form asp-action="Launch" method="post" asp-route-id="@item.ThreatId" class="m-2">
                                 <button class="btn btn-launch btn-sm"
                                         disabled="@item.IsActive">
                                     <i class="bi bi-rocket" style="color:yellow"></i> @if (item.IsActive)

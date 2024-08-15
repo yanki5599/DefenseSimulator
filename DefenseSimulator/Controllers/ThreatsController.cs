@@ -9,6 +9,7 @@ using DefenseSimulator.Data;
 using DefenseSimulator.Models;
 using DefenseSimulator.Services;
 using System.Collections;
+using DefenseSimulator.Enums;
 
 namespace DefenseSimulator.Controllers
 {
@@ -79,12 +80,12 @@ namespace DefenseSimulator.Controllers
             return View(threat);
         }
 
-        
 
-        
 
-        // GET: Threats/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+
+
+        // GET: Threats/Abort/5
+        public async Task<IActionResult> Abort(int? id)
         {
             if (id == null)
             {
@@ -103,19 +104,17 @@ namespace DefenseSimulator.Controllers
             return View(threat);
         }
 
-        // POST: Threats/Delete/5
+        // POST: Threats/Abort/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> AbortConfirmed(int ThreatId)
         {
-            /*var threat = await _context.Threat.FindAsync(id);
-            if (threat != null)
-            {
-                _context.Threat.Remove(threat);
-            }
 
-            await _context.SaveChangesAsync();*/
-            return RedirectToAction(nameof(Index));
+            Threat? attack = _context.Threat.Find(ThreatId);
+
+            bool result = await _threatHandlerService.RemoveThreat(ThreatId, ThreatStatus.Aborted);
+
+            return result ? RedirectToAction(nameof(Index)) : RedirectToAction(nameof(Index), new { Error = "Attack not found" });
         }
 
         //Post:  Threats/Launch/5
@@ -133,33 +132,9 @@ namespace DefenseSimulator.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        //Post:  Threats/Launch/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Terminate(int id)
-        {
-            if (id != null)
-            {
-                var threat = await _context.Threat.FindAsync(id);
-                if (threat != null)
-                {
-                    _context.Threat.Remove(threat);
-                    _context.SaveChanges();
-                }
-            }
-            return RedirectToAction(nameof(Index));
-        }
+        
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EndAttack(int attackId)
-        {
-            Threat? attack = _context.Threat.Find(attackId);
-
-            bool result = await _threatHandlerService.RemoveThreat(attackId);
-
-            return result ? RedirectToAction(nameof(Index)) : RedirectToAction(nameof(Index), new { Error = "Attack not found" });
-        }
+        
 
         private bool ThreatExists(int id)
         {
